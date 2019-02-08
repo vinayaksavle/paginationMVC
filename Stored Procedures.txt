@@ -1,0 +1,174 @@
+https://www.completecsharptutorial.com/mvc-articles/insert-update-delete-in-asp-net-mvc-5-without-entity-framework.php
+
+CREATE TABLE [dbo].[tblUsers]
+(
+	[intUserId] INT NOT NULL PRIMARY KEY, 
+    [strCountry] VARCHAR(50) NOT NULL, 
+    [strState] VARCHAR(50) NOT NULL, 
+    [strCity] VARCHAR(50) NOT NULL, 
+    [strEmail] VARCHAR(50) NOT NULL, 
+    [strUsername] VARCHAR(50) NOT NULL, 
+    [strPassword] VARCHAR(50) NOT NULL
+)
+
+
+CREATE TABLE [dbo].[tblRoles]
+(
+	[intRoleId] INT NOT NULL PRIMARY KEY, 
+    [strRoleName] VARCHAR(50) NOT NULL
+)
+
+CREATE TABLE [dbo].[tblStudent]
+(
+	[intId] INT NOT NULL PRIMARY KEY IDENTITY, 
+    [strName] NVARCHAR(50) NULL, 
+    [strCity] NVARCHAR(50) NULL, 
+    [strEmail] NVARCHAR(100) NULL
+)
+
+
+
+CREATE PROCEDURE [dbo].[spInsertStudent]
+(
+@strName varchar(50),
+@strCity varchar(50),
+@strEmail varchar(50)
+)
+AS
+BEGIN
+INSERT INTO tblStudent values (@strName,@strCity,@strEmail)
+END
+
+CREATE PROCEDURE [dbo].[spGetStudent]
+
+AS
+BEGIN
+SELECT * FROM tblStudent 
+END
+
+
+CREATE PROCEDURE [dbo].[spUpdateStudent]
+(
+@intId int,
+@strName varchar(50),
+@strCity varchar(50),
+@strEmail varchar(50)
+)
+AS
+BEGIN
+UPDATE tblStudent
+SET strName=@strName,
+strCity=@strCity,
+strEmail=@strEmail
+WHERE intId=@intId
+END
+
+
+CREATE PROCEDURE [dbo].[spDeleteStudent]
+(
+@intId int
+
+)
+AS
+BEGIN
+DELETE FROM tblStudent WHERE intId=@intId
+END
+
+
+
+
+
+
+
+
+
+
+
+CREATE or ALTER PROCEDURE sp_User_InsertUpdateDelete  
+(
+@intUserId INTEGER,
+@strUsername varchar(50),
+@strEmail VARCHAR(50),
+@strPassword VARCHAR(50),
+@strCountry VARCHAR(50),
+@strState VARCHAR(50),
+@strCity VARCHAR(50),
+@StatementType nvarchar(20) = ''
+  
+)  
+AS  
+BEGIN  
+IF @StatementType = 'Insert'  
+BEGIN  
+--insert into employee (id,first_name,last_name,salary,city) values( @id, @first_name, @last_name, @salary, @city)
+INSERT INTO tblUsers (strUsername,strEmail,strPassword,strCountry,strState,strCity) VALUES (@strUsername,@strEmail,@strPassword,@strCountry,@strState,@strCity)
+
+END  
+IF @StatementType = 'Select'  
+BEGIN  
+SELECT * FROM tblUsers  
+END  
+IF @StatementType = 'Update'  
+BEGIN  
+UPDATE tblUsers SET  
+strUsername = @strUsername, strEmail = @strEmail, strPassword = @strPassword,  
+strCountry = @strCountry,
+strState=@strState,
+strCity=@strCity
+WHERE intUserId = @intUserId  
+END  
+else IF @StatementType = 'Delete'  
+BEGIN  
+DELETE FROM tblUsers WHERE intUserId = @intUserId
+END  
+end  
+
+-*****************************************-
+ public bool AddUser(string procName, Dictionary<string, string> parameters)
+        {
+            Connection();
+            SqlCommand cmd = new SqlCommand(procName, con)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.CommandType = CommandType.StoredProcedure;
+            foreach (var item in parameters)
+            {
+                cmd.Parameters.AddWithValue(item.Key, item.Value);
+            }
+            //cmd.Parameters.AddWithValue("@strUsername", user.strUsername);
+            //cmd.Parameters.AddWithValue("@strEmail", user.strEmail);
+            //cmd.Parameters.AddWithValue("@strPassword", user.strPassword);
+            //cmd.Parameters.AddWithValue("@strCountry", user.strCountry);
+            //cmd.Parameters.AddWithValue("@strState", user.strState);
+            //cmd.Parameters.AddWithValue("@strCity", user.strCity);
+
+            con.Open();
+            int i = cmd.ExecuteNonQuery();
+            con.Close();
+
+            if (i >= 1)
+                return true;
+            else
+                return false;
+        }	
+
+
+public bool SaveRegisterUser(Register user)
+        {
+            Dictionary<string, string> test = new Dictionary<string, string>
+            {
+                { "@strUsername", user.strUsername },
+                { "@strEmail", user.strEmail },
+                { "@strPassword", user.strPassword },
+                { "@strCountry", user.strCountry },
+                { "@strState", user.strState },
+                { "@strCity", user.strCity }
+            };
+
+            string procName = "sp_User_InsertUpdateDelete";
+            return UserRepositoryDB.Instance.AddUser(procName, test);
+
+        }
+ 
